@@ -54,7 +54,13 @@
 
 - Use the **“Clear All”** button at the bottom of the dashboard to remove all logged meals. -->
 
+
 ## 📸 Demo
+![Screenshot 2025-05-15 220740](https://github.com/user-attachments/assets/e4ef5d1a-c1ef-4349-8a6e-f41b1c6432eb)
+
+![Screenshot 2025-05-15 220640](https://github.com/user-attachments/assets/7794d9cd-9525-44e8-bb16-dcc722775695)
+
+![Screenshot 2025-05-15 220652](https://github.com/user-attachments/assets/3e03afdc-d9a2-4c87-a1c6-cceca323f61e)
 
 ---
 
