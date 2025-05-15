@@ -1,12 +1,5 @@
-import { useState } from "react";
-
-const userInformation = [
-  {
-    userName: "sh",
-    fullName: "Shahadat Hossain",
-    password: 1234,
-  },
-];
+import { useState, useEffect } from "react";
+import CircularProgress from "./Circle";
 
 const predefinedMeals = [
   {
@@ -145,56 +138,179 @@ const predefinedMeals = [
 ];
 
 const categoryOptions = [
-  { name: "📂 Category" },
-  { name: "🍳 Breakfast" },
-  { name: "🥪 Lunch" },
-  { name: "🍽️ Dinner" },
-  { name: "🍿 Snack" },
+  { name: "Category", bg: "#eef5f0", color: "var(--Color--1)" }, // existing neutral
+
+  { name: "Breakfast", bg: "#f4f1ea", color: "#5a432a" }, // soft oat beige (earthy but clean)
+  { name: "Lunch", bg: "#e3f5e8", color: "#306b42" }, // softened mint green (brand-linked)
+  { name: "Dinner", bg: "#f6edea", color: "#5c2f2f" }, // dusty rose-beige (warm elegance)
+  { name: "Snack", bg: "#fdf6e3", color: "#645c33" }, // mellow warm cream (rich but airy)
 ];
 
 const timeSlotOptions = [
-  { name: "⏰ Time Slot" },
-  { name: "🌅 Morning" },
-  { name: "🏞️ Afternoon" },
-  { name: "🌇 Evening" },
-  { name: "🌙 Night" },
-];
+  { name: "Time Slot", bg: "#f1f4fa", color: "#2e3e50" }, // base neutral
 
-const Meals = [
-  {
-    id: 1,
-    name: "🍗 Chicken Rice Bowl",
-    ingredients: [
-      "Chicken Breast",
-      "Brown Rice",
-      "Broccoli",
-      "Olive Oil",
-      "Spices",
-    ],
-    quantity: 2,
-    calories: 1100,
-    price: 13.98,
-    category: "🍳 Breakfast",
-    timeSlot: "🌅 Morning",
-    date: "2025-05-10",
-  },
-  {
-    id: 2,
-    name: "🥣 Oats with Banana",
-    ingredients: ["Rolled Oats", "Milk", "Banana", "Honey", "Chia Seeds"],
-    quantity: 1,
-    calories: 320,
-    price: 3.49,
-    category: "🍳 Breakfast",
-    timeSlot: "🌙 Night",
-    date: "2025-05-10",
-  },
+  { name: "Morning", bg: "#e6f4f1", color: "#2c5e57" }, // fresh aqua green (morning freshness)
+  { name: "Afternoon", bg: "#edf4fe", color: "#365480" }, // gentle sky blue
+  { name: "Evening", bg: "#f3edf9", color: "#57387d" }, // twilight lavender
+  { name: "Night", bg: "#e8ebf2", color: "#2e3243" }, // soft dusk slate
 ];
+const activityFactors = {
+  sedentary: 1.2,
+  lightly: 1.375,
+  moderate: 1.55,
+  very: 1.725,
+  extra: 1.9,
+};
 
 // !------------ App ---------------------
+function getBmiStatus(bmi) {
+  if (bmi < 18.5) return "Underweight";
+  if (bmi < 24.9) return "Normal";
+  if (bmi < 29.9) return "Overweight";
+  return "Obese";
+}
+
+function calculateDailyDeficit(targetWeightLoss, totalDays) {
+  return Math.round((targetWeightLoss * 7700) / totalDays);
+}
+function BMI(weight, height) {
+  const heightInMeters = height / 100;
+  return Math.round(weight / heightInMeters ** 2);
+}
+const users = [
+  {
+    userName: "r7",
+    fullName: "Raiyan",
+    password: 1234,
+
+    weight: 70,
+    height: 175,
+    age: 24,
+    gender: "male",
+    activityLevel: "moderate",
+    targetWeightLoss: 3,
+    totalDays: 45,
+    dailyDeficit: 0,
+
+    bmiGoals: {
+      bmi: 22,
+      goalKcal: 0,
+      toBurnKcal: 0,
+      toWalkMiles: 0,
+    },
+
+    summary: {
+      mealsLogged: 0,
+      totalSpent: 0,
+      bmiStatus: "",
+      totalBurnedKcal: 0,
+    },
+  },
+];
 
 export default function App() {
-  const [user, setUser] = useState(userInformation[0]);
+  const [user, setUser] = useState(users[0]);
+  const [meals, setMeals] = useState([]);
+
+  const [progress, setProgress] = useState({
+    consumed: 0,
+    burned: 0,
+    distance: 0,
+  });
+  console.log(user);
+  console.log(meals);
+  useEffect(() => {
+    const {
+      weight,
+      height,
+      age,
+      gender,
+      activityLevel,
+      targetWeightLoss,
+      totalDays,
+    } = user;
+
+    // Calculate total meals and spending
+    const totalMeal =
+      Math.round(meals.reduce((sum, meal) => sum + meal.quantity, 0)) || 0;
+    const totalPrice =
+      Math.round(meals.reduce((sum, meal) => sum + meal.price, 0)) || 0;
+
+    // BMI calculation
+    const bmi = BMI(weight, height);
+    const BMIStatus = getBmiStatus(bmi);
+
+    // Calculate BMR
+    const BMR =
+      gender === "male"
+        ? 10 * weight + 6.25 * height - 5 * age + 5
+        : 10 * weight + 6.25 * height - 5 * age - 161;
+
+    // Activity level factor
+    const TDEE = Math.round(BMR * activityFactors[activityLevel]);
+
+    // Daily deficit to meet weight loss goal
+    const dailyDeficit = calculateDailyDeficit(targetWeightLoss, totalDays);
+
+    // Daily calorie goal after deficit
+    const goalKcal = Math.round(TDEE - dailyDeficit);
+
+    // Total goal burn for entire weight loss
+    const toBurnKcal = Math.round(targetWeightLoss * 7700);
+
+    // Equivalent distance to burn goal kcal (assuming 100 kcal/mile)
+    const toWalkMiles = Math.round(toBurnKcal / 100);
+
+    // Total consumed from meals
+    const totalCaloriesConsumed = meals.reduce((sum, m) => sum + m.calories, 0);
+
+    // Estimate burned kcal from activity (simulate 60% of intake burned)
+    const totalBurnedKcal = Math.round(totalCaloriesConsumed * 0.6);
+
+    // Estimate distance covered (100 kcal ≈ 1 mile)
+    const distanceCovered = Math.round(totalBurnedKcal / 100);
+
+    // === Balanced Progress Calculation (based on goalKcal) ===
+    const percentConsumed = goalKcal
+      ? Math.min(Math.round((totalCaloriesConsumed / goalKcal) * 100), 100)
+      : 0;
+
+    const percentBurned = goalKcal
+      ? Math.min(Math.round((totalBurnedKcal / goalKcal) * 100), 100)
+      : 0;
+
+    const percentDistance = goalKcal
+      ? Math.min(Math.round((distanceCovered * 100) / (goalKcal / 100)), 100)
+      : 0;
+
+    // Update progress rings
+    setProgress({
+      consumed: percentConsumed,
+      burned: percentBurned,
+      distance: percentDistance,
+    });
+
+    // Update user state
+    setUser((curUser) => ({
+      ...curUser,
+      dailyDeficit,
+      bmiGoals: {
+        bmi,
+        goalKcal,
+        toBurnKcal,
+        toWalkMiles,
+      },
+      summary: {
+        mealsLogged: totalMeal,
+        totalSpent: totalPrice,
+        bmiStatus: BMIStatus,
+        totalBurnedKcal,
+      },
+    }));
+  }, [meals]);
+  function handleAddMeal(meal) {
+    setMeals((cur) => [...cur, meal]);
+  }
 
   return (
     <div className="app">
@@ -213,7 +329,11 @@ export default function App() {
           </>
         )}
       </Header>
-      <Main>{/* <MealAddForm /> */}</Main>
+      <Main>
+        <Dashboard user={user} progress={progress} />
+        <MealDataShow meals={meals} />
+        <MealAddForm onAddMeal={handleAddMeal} />
+      </Main>
     </div>
   );
 }
@@ -221,7 +341,7 @@ export default function App() {
 // !------------ Main ---------------------
 
 function Main({ children }) {
-  return <div className="main container">{children}</div>;
+  return <div className="main">{children}</div>;
 }
 
 // !------------ Header ---------------------
@@ -294,9 +414,140 @@ function UserProfile() {
   );
 }
 
+// !------------ Dashboard---------------------
+
+function Dashboard({ user, progress }) {
+  return (
+    <div className="dashboard container">
+      <h3 className="dashboard-heading-3">Dashboard</h3>
+      <div className="dashboard-row-box">
+        <DashboardRow>
+          <CircularProgress
+            id="1"
+            progress={progress.consumed}
+            size={200}
+            gradientColors={["#A8E6CF", "#DCEDC1"]}
+            textColor="#4CAF50"
+            backgroundColor="#f8f9fa"
+            animationDuration={1500}
+            animationTimingFunction="cubic-bezier(0.4, 0, 0.2, 1)"
+          />
+          <DashboardRowTitle>🥗 Calories Consume</DashboardRowTitle>
+        </DashboardRow>
+        <DashboardRow>
+          <CircularProgress
+            id="2"
+            progress={progress.burned}
+            size={200}
+            gradientColors={["#FFD3B6", "#FFAAA5"]}
+            textColor="#FF5722"
+            backgroundColor="#fff8f4"
+            animationDuration={1500}
+            animationTimingFunction="cubic-bezier(0.4, 0, 0.2, 1)"
+          />
+          <DashboardRowTitle>🔥 Calories Burned </DashboardRowTitle>
+        </DashboardRow>
+        <DashboardRow>
+          <CircularProgress
+            id="3"
+            progress={progress.distance}
+            size={200}
+            gradientColors={["#B2EBF2", "#B39DDB"]}
+            textColor="#3F51B5"
+            backgroundColor="#f6f7fb"
+            animationDuration={1500}
+            animationTimingFunction="cubic-bezier(0.4, 0, 0.2, 1)"
+          />
+          <DashboardRowTitle>🚶‍♂️ Distance Covered</DashboardRowTitle>
+        </DashboardRow>
+      </div>
+
+      <Box title={"BMI & Goals"}>
+        <BmiAndGoalBox
+          title={"BMI"}
+          number={user.bmiGoals.bmi}
+          color={"color-1"}
+        />
+        <BmiAndGoalBox
+          title={"Goal (kcal)"}
+          number={user.bmiGoals.goalKcal}
+          color={"color-2"}
+        />
+        <BmiAndGoalBox
+          title={"To Burn (kcal)"}
+          number={user.bmiGoals.toBurnKcal}
+          color={"color-3"}
+        />
+        <BmiAndGoalBox
+          title={"To Walk (mi)"}
+          number={user.bmiGoals.toWalkMiles}
+          color={"color-4"}
+        />
+      </Box>
+
+      <Box title={"Summary"}>
+        <BmiAndGoalBox
+          title={"Meals Logged"}
+          number={user.summary.mealsLogged}
+          color={"color-5"}
+        />
+        <BmiAndGoalBox
+          title={"Total Spent"}
+          number={user.summary.totalSpent}
+          color={"color-6"}
+        />
+        <BmiAndGoalBox
+          title={"BMI Status"}
+          number={user.summary.bmiStatus}
+          color={"color-7"}
+        />
+        <BmiAndGoalBox
+          title={"Total Burned (kcal)"}
+          number={user.summary.totalBurnedKcal}
+          color={"color-8"}
+        />
+      </Box>
+    </div>
+  );
+}
+// ? ------------------ Box  ------------------
+
+function Box({ title, children }) {
+  return (
+    <div className="box">
+      <h3>{title}</h3>
+      <div className="BMI-goal-boxs">{children}</div>
+    </div>
+  );
+}
+
+// ? ------------------ Bmi And Goal Box ------------------
+function BmiAndGoalBox({ title, number, color }) {
+  return (
+    <div className={`bg-box ${color}`}>
+      <p className="sub-title">
+        {title}:{" "}
+        <span>
+          <strong>{number}</strong>
+        </span>
+      </p>
+    </div>
+  );
+}
+// ? ------------------ Dashboard Row  ------------------
+
+function DashboardRow({ children }) {
+  return <div className="dashboard-row">{children}</div>;
+}
+
+// ? ------------------ Dashboard Row Title  ------------------
+function DashboardRowTitle({ children }) {
+  return <h4 className="circle-title">{children}</h4>;
+}
+
 // !------------ Meal Add Form ---------------------
 
-function MealAddForm() {
+function MealAddForm({ onAddMeal }) {
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
   const [timeSlot, setTimeSlot] = useState("");
@@ -306,58 +557,91 @@ function MealAddForm() {
   const meal = predefinedMeals.find((cur) => cur.name === name);
   const calories = meal?.calories && quantity ? meal.calories * quantity : "";
   const price = meal?.price && quantity ? meal.price * quantity : "";
+  const ingredients =
+    predefinedMeals.find((cur) => cur.name === name)?.ingredients || [];
+  function handleSubmit(e) {
+    e.preventDefault();
+
+    if (!name || !category || !timeSlot || !date || !quantity) return;
+
+    const newMeal = {
+      id: crypto.randomUUID(),
+      name,
+      timeSlot,
+      date,
+      quantity,
+      calories,
+      ingredients,
+      price,
+      category,
+    };
+
+    onAddMeal(newMeal);
+
+    setName("");
+    setCategory("");
+    setTimeSlot("");
+    setDate("");
+    setQuantity("");
+  }
 
   return (
-    <form className="meal-add-form">
-      <h2 className="meal-form-title"> Add a New Meal </h2>
-      <SelectInput
-        options={predefinedMeals}
-        str="🔽 Choose an Item"
-        value={name}
-        setValue={setName}
-      />
-      <SelectInput
-        options={categoryOptions}
-        str={"📂 Category"}
-        value={category}
-        setValue={setCategory}
-      />
-      <input
-        type="date"
-        value={date}
-        onChange={(e) => setDate(e.target.value)}
-      />
-      <SelectInput
-        options={timeSlotOptions}
-        str="⏰ Time Slot"
-        value={timeSlot}
-        setValue={setTimeSlot}
-      />
-      <input
-        type="number"
-        placeholder="Quantity"
-        value={quantity}
-        onChange={(e) =>
-          setQuantity(
-            e.target.value === ""
-              ? ""
-              : +e.target.value < 1
-              ? ""
-              : +e.target.value
-          )
-        }
-      />
-
-      <input
-        type="number"
-        placeholder="Calories"
-        value={calories}
-        readOnly={true}
-      />
-      <input type="number" placeholder="Price" value={price} readOnly={true} />
-
-      <input type="submit" value="Add Meal" className="btn btn-submit" />
-    </form>
+    <div className="container">
+      <h3>🧑‍🍳 Plan Your Next Meal</h3>
+      <form className="meal-add-form" onSubmit={handleSubmit}>
+        <h2 className="meal-form-title"> Add a New Meal </h2>
+        <SelectInput
+          options={predefinedMeals}
+          str="🔽 Choose an Item"
+          value={name}
+          setValue={setName}
+        />
+        <SelectInput
+          options={categoryOptions}
+          str={"📂 Category"}
+          value={category}
+          setValue={setCategory}
+        />
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
+        <SelectInput
+          options={timeSlotOptions}
+          str="⏰ Time Slot"
+          value={timeSlot}
+          setValue={setTimeSlot}
+        />
+        <input
+          type="number"
+          placeholder="Quantity"
+          value={quantity}
+          onChange={(e) =>
+            setQuantity(
+              e.target.value === ""
+                ? ""
+                : +e.target.value < 1
+                ? ""
+                : +e.target.value
+            )
+          }
+        />
+        <input
+          type="number"
+          placeholder="Calories"
+          value={calories}
+          readOnly={true}
+        />
+        <input
+          type="number"
+          placeholder="Price"
+          value={price}
+          readOnly={true}
+        />
+        <input type="submit" value="Add Meal" className="btn btn-submit" />
+      </form>
+    </div>
   );
 }
 
@@ -371,5 +655,79 @@ function SelectInput({ options, str = "", value, setValue }) {
         </option>
       ))}
     </select>
+  );
+}
+
+// !------------ Meal Table ---------------------
+
+function MealDataShow({ meals }) {
+  return (
+    <div className="container--2">
+      <h3>🥗 Your Planned Meals</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Meal</th>
+            <th>Ingredients</th>
+            <th>Category</th>
+            <th>Time Slot</th>
+            <th>Date</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Calories</th>
+          </tr>
+        </thead>
+        <tbody>
+          {meals.map((cur) => (
+            <MealDataRow mealData={cur} key={cur.id} />
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+// !------------ Meal Row ---------------------
+
+function MealDataRow({ mealData }) {
+  const categoryData = categoryOptions.find(
+    (cur) => cur.name === mealData.category
+  );
+  const timeSlotData = timeSlotOptions.find(
+    (cur) => cur.name === mealData.timeSlot
+  );
+
+  return (
+    <tr>
+      <td>{mealData.name}</td>
+      <td>{mealData?.ingredients?.slice(0, 2).join(", ") + "..."}</td>
+      <td>
+        <p
+          style={{
+            backgroundColor: categoryData.bg,
+            color: categoryData.color,
+          }}
+        >
+          {mealData.category}
+        </p>
+      </td>
+
+      <td>
+        <p
+          style={{
+            backgroundColor: timeSlotData.bg,
+            color: timeSlotData.color,
+          }}
+        >
+          {mealData.timeSlot}
+        </p>
+      </td>
+
+      <td>{mealData.date}</td>
+      <td>{mealData.quantity}</td>
+      <td>{mealData.price}</td>
+      <td>
+        {mealData.calories} <button>❌</button>
+      </td>
+    </tr>
   );
 }
