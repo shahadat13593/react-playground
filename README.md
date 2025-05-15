@@ -9,14 +9,15 @@ A collection of mini React.js projects and components built to sharpen front-end
 This repository is a **React.js learning lab**. It includes multiple small-scale projects ranging from simple interactive components to complete mini-apps. Ideal for beginners and intermediate developers who want to grow their practical React skills.
 
 ---
+---
 
 ## 📁 Projects Included
- 
-| Project Name        | Description                                                                                         |
 
-|---------------------|-----------------------------------------------------------------------------------------------------|
-| Planewise App       | A task management app to create, track, and organize your daily plans.                              |
-| BiteWise App        | A modern web application designed to help users log, track, and analyze their daily meals with ease |
+| Project Name   | Description                                                                                              |
+|----------------|----------------------------------------------------------------------------------------------------------|
+| Planewise App  | A task management app to create, track, and organize your daily plans.                                   |
+| BiteWise App   | A modern web application designed to help users log, track, and analyze their daily meals with ease.     |
+
 
 
 
