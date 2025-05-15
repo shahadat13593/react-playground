@@ -11,10 +11,10 @@ This repository is a **React.js learning lab**. It includes multiple small-scale
 ---
 
 ## 📁 Projects Included
+ 
+| Project Name        | Description                                                                                         |
 
-| Project Name        | Description                                           |
-
-|---------------------|-------------------------------------------------------|
+|---------------------|-----------------------------------------------------------------------------------------------------|
 | Planewise App       | A task management app to create, track, and organize your daily plans.                              |
 | BiteWise App        | A modern web application designed to help users log, track, and analyze their daily meals with ease |
 
